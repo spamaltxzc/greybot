@@ -120,7 +120,6 @@ client.on('messageCreate', async (m) => {
   if (m.author.bot && m.author.id !== RIN_APP_ID && m.author.id !== '247283454440374274') return;
 
   if (await handleBingo(m)) return;
-  if (await handleSentimentCommand(m)) return;
 
   // Mod command detection
   const modCommand = parseModCommand(m);
