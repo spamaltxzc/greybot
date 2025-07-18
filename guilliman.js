@@ -4,17 +4,14 @@ const { Client } = require('discord.js-selfbot-v13');
 const { parse: csvParse } = require('csv-parse/sync');
 const { create, all } = require('mathjs');
 const cron  = require('node-cron');
-const { handleSentimentCommand } = require('./commands/sentiment');
 module.exports = { handleSentimentCommand };
 const fs = require('fs');
 const path = require('path');
 const Tesseract = require('tesseract.js');
 const JimpImport = require('jimp');
 const Jimp = JimpImport.default || JimpImport;
-const { startBumpLoop } = require('./bump.js');
 const fetch = (...a)=>import('node-fetch').then(({default:f})=>f(...a));
 
-const { startPhoneBot, handleYggdrasilMessage } = require('./userphoneBot');
 
 const math = create(all);
 math.config({ number:'number', precision:64 });
@@ -55,13 +52,6 @@ client.ws.on('READY', (packet) => {
 
 client.once('ready', () => {
   console.log(`[READY] ${client.user.tag}`);
-
-  if (!client.sessionId) {
-    console.error('❌ Session ID still not set.');
-  } else {
-    // startPhoneBot(client);
-    startBumpLoop(client);
-  }
 });
 
 
