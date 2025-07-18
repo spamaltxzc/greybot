@@ -4,7 +4,6 @@ const { Client } = require('discord.js-selfbot-v13');
 const { parse: csvParse } = require('csv-parse/sync');
 const { create, all } = require('mathjs');
 const cron  = require('node-cron');
-module.exports = { handleSentimentCommand };
 const fs = require('fs');
 const path = require('path');
 const Tesseract = require('tesseract.js');
