@@ -9,8 +9,9 @@ import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
 import Tesseract from 'tesseract.js';
-import JimpImport from 'jimp';
-const Jimp = JimpImport.default || JimpImport;
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const Jimp = require('jimp');
 import express from 'express';
 import sharp from 'sharp';
 
