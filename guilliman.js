@@ -9,6 +9,7 @@ const path = require('path');
 const Tesseract = require('tesseract.js');
 const JimpImport = require('jimp');
 const Jimp = JimpImport.default || JimpImport;
+import express from 'express';
 const fetch = (...a)=>import('node-fetch').then(({default:f})=>f(...a));
 
 
@@ -475,3 +476,9 @@ function registerThreadDeleteListener(client) {
 
 client.login(process.env.DISCORD_TOKEN).catch(console.error);
 
+const app = express();
+app.get('/', (req, res) => res.send('Bot is alive.'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Keep-alive server running on port ${PORT}`);
+});
