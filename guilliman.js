@@ -1,4 +1,5 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 const { joinVoiceChannel } = require('@discordjs/voice');
 const { Client } = require('discord.js-selfbot-v13');
 const { parse: csvParse } = require('csv-parse/sync');
