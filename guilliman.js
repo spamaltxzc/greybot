@@ -53,9 +53,10 @@ const delay  = ms=>new Promise(r=>setTimeout(r,ms));
 const RIN_APP_ID = '429656936435286016';   // always string!
 const GUILD_ID = '1252204883533103145';    // always string!
 
+let sessionId
 
 client.ws.on('READY', (packet) => {
-  client.sessionId = packet.session_id;
+  sessionId = packet.session_id;
   console.log('Session ID set:', client.sessionId);
 });
 
