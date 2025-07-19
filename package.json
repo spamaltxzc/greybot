@@ -1,8 +1,4 @@
 {
-  "type": "module",
-  "scripts": {
-    "start": "node guilliman.js"
-  },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
     "@vitalets/google-translate-api": "^9.2.1",
