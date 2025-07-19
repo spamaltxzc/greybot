@@ -9,24 +9,18 @@ import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';  // <-- only here, once
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const Jimp = require('jimp');
 
 import Tesseract from 'tesseract.js';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const Jimp = require('jimp');
 import express from 'express';
 import sharp from 'sharp';
-
-// For node-fetch, you can use dynamic import or install v3+ which supports ESM:
 import fetch from 'node-fetch';
-
 
 const math = create(all);
 math.config({ number:'number', precision:64 });
