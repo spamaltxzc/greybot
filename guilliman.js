@@ -1,17 +1,21 @@
 import dotenv from 'dotenv';
 dotenv.config();
-const { joinVoiceChannel } = require('@discordjs/voice');
-const { Client } = require('discord.js-selfbot-v13');
-const { parse: csvParse } = require('csv-parse/sync');
-const { create, all } = require('mathjs');
-const cron  = require('node-cron');
-const fs = require('fs');
-const path = require('path');
-const Tesseract = require('tesseract.js');
-const JimpImport = require('jimp');
+
+import { joinVoiceChannel } from '@discordjs/voice';
+import { Client } from 'discord.js-selfbot-v13';
+import { parse as csvParse } from 'csv-parse/sync';
+import { create, all } from 'mathjs';
+import cron from 'node-cron';
+import fs from 'fs';
+import path from 'path';
+import Tesseract from 'tesseract.js';
+import JimpImport from 'jimp';
 const Jimp = JimpImport.default || JimpImport;
 import express from 'express';
-const fetch = (...a)=>import('node-fetch').then(({default:f})=>f(...a));
+import sharp from 'sharp';
+
+// For node-fetch, you can use dynamic import or install v3+ which supports ESM:
+import fetch from 'node-fetch';
 
 
 const math = create(all);
