@@ -1,4 +1,8 @@
 {
+  "type": "module",
+  "scripts": {
+    "start": "node guilliman.js"
+  },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
     "@vitalets/google-translate-api": "^9.2.1",
@@ -8,6 +12,7 @@
     "csv-parse": "^5.6.0",
     "discord.js": "^14.18.0",
     "discord.js-selfbot-v13": "^3.7.0",
+    "express": "^4.19.2",
     "google-auth-library": "^9.15.1",
     "google-spreadsheet": "^4.1.4",
     "google-translate-api-x": "^10.7.2",
