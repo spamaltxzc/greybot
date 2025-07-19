@@ -1,4 +1,12 @@
 {
+  "name": "guilliman-bot",
+  "version": "1.0.0",
+  "description": "Discord bot running on Render",
+  "type": "module",
+  "main": "guilliman.js",
+  "scripts": {
+    "start": "node guilliman.js"
+  },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
     "@vitalets/google-translate-api": "^9.2.1",
@@ -25,3 +33,5 @@
     "vader-sentiment": "^1.1.3"
   }
 }
+
+
