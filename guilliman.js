@@ -386,9 +386,6 @@ function saveModThreads() {
 
 // === Persistent Reports Mapping ===
 
-const sharp = require('sharp');
-
-
 
 // === Mod Report Poster ===
 async function postModReport(forumChannelId, report, client) {
