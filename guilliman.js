@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import { ChannelType } from 'discord.js';
+
 import { joinVoiceChannel } from '@discordjs/voice';
-import { Client, GatewayIntentBits, Partials } from 'discord.js';
+import { Client } from 'discord.js-selfbot-v13';
 import { parse as csvParse } from 'csv-parse/sync';
 import { create, all } from 'mathjs';
 import cron from 'node-cron';
@@ -25,17 +25,6 @@ import fetch from 'node-fetch';
 const math = create(all);
 math.config({ number:'number', precision:64 });
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers,
-  ],
-  partials: [Partials.Message, Partials.Channel, Partials.GuildMember, Partials.User],
-});
-
-
 /* ---------- CONFIG ---------- */
 
 const COUNTING_CHANNEL_ID   = '1348370380657524896';
@@ -57,6 +46,7 @@ const STAFF_ROLE_IDS = [
   '1358801211901345916',
 ];
 
+const client = new Client({ checkUpdate:false, readyStatus:false });
 const delay  = ms=>new Promise(r=>setTimeout(r,ms));
 
 
@@ -65,11 +55,13 @@ const GUILD_ID = '1252204883533103145';    // always string!
 
 let sessionId
 
+client.ws.on('READY', (packet) => {
+  sessionId = packet.session_id;
+  console.log('Session ID set:', client.sessionId);
+});
+
 client.once('ready', () => {
-  const channel = client.channels.fetch('1356006813815935096');
-  console.log('Channel:', channel);
-  console.log('Channel type:', channel.type);
-  console.log('Channel type enum GuildForum:', ChannelType.GuildForum);
+  console.log([READY] ${client.user.tag});
 });
 
 
@@ -95,13 +87,14 @@ async function processXPQueue(client) {
       await delay(2000);
       await xpChannel.send('1');
       await delay(2000);
-      await xpChannel.send(`<@${userId}>`);
+      await xpChannel.send(<@${userId}>);
       await delay(2000);
       await xpChannel.send(String(xpAmount));
       await delay(2000);
 
-
+      console.log(✅ Gave ${xpAmount} XP to user ${userId});
     } catch (err) {
+      console.error(❌ Failed to give XP to ${userId}:, err);
     }
   }
 
@@ -142,7 +135,7 @@ client.on('messageCreate', async (m) => {
   // Mod command detection
   const modCommand = parseModCommand(m);
   if (modCommand) {
-    const member = await m.guild.members.fetch(m.author.id).catch(() => null);
+    const member = m.member;
     if (!member) return;
 
     const authorizedRoles = [
@@ -154,13 +147,13 @@ client.on('messageCreate', async (m) => {
       '1376534380075421716'
     ];
 
-    const hasRole = authorizedRoles.some(roleId => member?.roles.cache.has(roleId));
+    const hasRole = authorizedRoles.some(roleId => member.roles.cache.has(roleId));
     if (!hasRole) {
-      console.log(`Unauthorized mod command attempt by ${m.author.tag}`);
+      console.log(Unauthorized mod command attempt by ${m.author.tag});
       return;
     }
 
-    console.log(`Mod command detected by authorized user ${m.author.tag}!, modCommand`);
+    console.log(Mod command detected by authorized user ${m.author.tag}!, modCommand);
 
     try {
       await postModReport('1356006813815935096', modCommand, client);
@@ -202,7 +195,7 @@ async function handleBingo(message){
   let csvText;
   try {
     const res = await fetch(file.url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error(HTTP ${res.status});
     csvText = await res.text();
   } catch (err) {
     console.error('[CSV] fetch error:', err);
@@ -275,7 +268,7 @@ async function handleBingo(message){
       const m = await guild.members.fetch(id).catch(() => null);
       if (m) {
         await m.roles.add(role).catch(() => {});
-        roleUpdates[label].push(`<@${id}>`);
+        roleUpdates[label].push(<@${id}>);
       }
     }
   }
@@ -287,9 +280,9 @@ async function handleBingo(message){
   async function giveXp(id, amount) {
     await xpChannel.send('t@score');         await delay(2000);
     await xpChannel.send('1');               await delay(2000);
-    await xpChannel.send(`<@${id}>`);        await delay(2000);
+    await xpChannel.send(<@${id}>);        await delay(2000);
     await xpChannel.send(String(amount));    await delay(2000);
-    xpUpdates[amount === 2000 ? '2' : '1'].push(`<@${id}>`);
+    xpUpdates[amount === 2000 ? '2' : '1'].push(<@${id}>);
   }
 
   for (const id of topIDs)    await giveXp(id, 2000);
@@ -298,15 +291,15 @@ async function handleBingo(message){
   const announce = [];
 
   if (roleUpdates.striker.length)
-    announce.push(`Added **Striker** role to: ${roleUpdates.striker.join(', ')}`);
+    announce.push(Added **Striker** role to: ${roleUpdates.striker.join(', ')});
   if (roleUpdates.benchwarmer.length)
-    announce.push(`Added **Benchwarmer** role to: ${roleUpdates.benchwarmer.join(', ')}`);
+    announce.push(Added **Benchwarmer** role to: ${roleUpdates.benchwarmer.join(', ')});
   if (roleUpdates.clown.length)
-    announce.push(`Added **Clown** role to: ${roleUpdates.clown.join(', ')}`);
+    announce.push(Added **Clown** role to: ${roleUpdates.clown.join(', ')});
   if (xpUpdates['2'].length)
-    announce.push(`Gave **2000 XP** to: ${xpUpdates['2'].join(', ')}`);
+    announce.push(Gave **2000 XP** to: ${xpUpdates['2'].join(', ')});
   if (xpUpdates['1'].length)
-    announce.push(`Gave **1000 XP** to: ${xpUpdates['1'].join(', ')}`);
+    announce.push(Gave **1000 XP** to: ${xpUpdates['1'].join(', ')});
 
   if (announce.length)
     await message.channel.send(announce.join('\n'));
@@ -354,7 +347,7 @@ function humanizeDuration(dur) {
   let unitStr = unitsMap[unit] || unit;
   if (num !== 1) unitStr += 's';
 
-  return `${num} ${unitStr}`;
+  return ${num} ${unitStr};
 }
 
 // === Mod Command Parser ===
@@ -403,36 +396,25 @@ function saveModThreads() {
 async function postModReport(forumChannelId, report, client) {
   console.log('Posting mod report:', report);
 
-  // Fetch the correct guild
-  const guild = await client.guilds.fetch(GUILD_ID);
-  
+  const guild = client.guilds.cache.first();
+  const forumChannel = await client.channels.fetch(forumChannelId);
+  if (!forumChannel || forumChannel.type !== 'GUILD_FORUM') {
+    console.error('Not a forum channel');
+    return;
+  }
+
   try {
-    const forumChannel = await client.channels.fetch(forumChannelId);
-    console.log('Fetched channel:', forumChannel);
-    console.log('Fetched channel type:', forumChannel?.type);
-
-    if (!forumChannel || forumChannel.type !== ChannelType.GuildForum) {
-      console.error(`Not a forum channel: got type ${forumChannel?.type}`);
-      return;
-    }
-
     const targetUserId = report.userId.trim();
-    if (!targetUserId) {
-      console.error('User ID is invalid or missing');
-      return;
-    }
 
-    // Handle 'ban' type reports
     if (report.type === 'ban' && !modThreads[targetUserId]) {
       const messageCount = await getMessageCount(guild, targetUserId);
       if (messageCount < 1000) {
         const logChannel = await client.channels.fetch('1356009015485796372');
-        await logChannel.send(`${targetUserId}\nReason: ${report.reason}\nBanned by <@${report.moderatorId}>`);
+        await logChannel.send(${targetUserId}\nReason: ${report.reason}\nBanned by <@${report.moderatorId}>);
         return;
       }
     }
 
-    // Fetch existing thread or create new one
     if (modThreads[targetUserId]) {
       const threadId = modThreads[targetUserId];
       const existingThread = await forumChannel.threads.fetch(threadId).catch(() => null);
@@ -440,22 +422,19 @@ async function postModReport(forumChannelId, report, client) {
         await sendReportToThread(existingThread, report, client);
         return;
       } else {
-        console.log('Thread not found, creating new one.');
         delete modThreads[targetUserId];
         saveModThreads();
       }
     }
 
-    // Fetch active threads and create a new one if necessary
     const activeThreads = await forumChannel.threads.fetchActive();
     const allThreads = [...activeThreads.threads.values()];
     let targetThread = allThreads.find(t => t.name === targetUserId);
 
     if (!targetThread) {
-      console.log(`No existing thread found for user ${targetUserId}. Creating a new one.`);
       targetThread = await forumChannel.threads.create({
         name: targetUserId,
-        message: { content: `Thread created for user <@${targetUserId}>.` },
+        message: { content: Thread created for user <@${targetUserId}>. },
       });
     }
 
@@ -467,6 +446,7 @@ async function postModReport(forumChannelId, report, client) {
 
     await sendReportToThread(targetThread, report, client);
 
+
   } catch (error) {
     console.error('Error posting mod report:', error);
   }
@@ -477,7 +457,11 @@ async function sendReportToThread(thread, report, client) {
   const moderator = await client.users.fetch(report.moderatorId).catch(() => null);
   const moderatorName = moderator ? moderator.username : 'Unknown Moderator';
 
-  const content = `**Type:** ${report.type}\n**Moderator:** ${moderatorName}\n**Duration:** ${humanizeDuration(report.duration)}\n**Reason:**`
+  const content = -----------------------------------------------------------------------
+**Type:** ${report.type}
+**Moderator:** ${moderatorName}
+**Duration:** ${humanizeDuration(report.duration)}
+**Reason:** ${report.reason};
 
   const files = report.attachments.map(att => ({ attachment: att.url, name: att.name }));
   await thread.send({ content, files });
@@ -489,7 +473,7 @@ function registerThreadDeleteListener(client) {
   client.on('threadDelete', (thread) => {
     const userId = Object.keys(modThreads).find(key => modThreads[key] === thread.id);
     if (userId) {
-      console.log(`Thread for user ${userId} was deleted, removing from JSON.`);
+      console.log(Thread for user ${userId} was deleted, removing from JSON.);
       delete modThreads[userId];
       saveModThreads();
     }
@@ -508,6 +492,5 @@ const app = express();
 app.get('/', (req, res) => res.send('Bot is alive.'));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Keep-alive server running on port ${PORT}`);
+  console.log(Keep-alive server running on port ${PORT});
 });
-
