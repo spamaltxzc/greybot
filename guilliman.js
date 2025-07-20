@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-
+import { ChannelType } from 'discord.js';
 import { joinVoiceChannel } from '@discordjs/voice';
 import { Client, GatewayIntentBits, Partials } from 'discord.js';
 import { parse as csvParse } from 'csv-parse/sync';
@@ -402,9 +402,9 @@ async function postModReport(forumChannelId, report, client) {
 
   const guild = client.guilds.cache.first();
   const forumChannel = await client.channels.fetch(forumChannelId);
-  if (!forumChannel || forumChannel.type !== 'GUILD_FORUM') {
-    console.error('Not a forum channel');
-    return;
+  if (!forumChannel || forumChannel.type !== ChannelType.GuildForum) {
+  console.error('Not a forum channel');
+  return;
   }
 
   try {
