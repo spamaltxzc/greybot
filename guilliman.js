@@ -461,11 +461,7 @@ async function sendReportToThread(thread, report, client) {
   const moderator = await client.users.fetch(report.moderatorId).catch(() => null);
   const moderatorName = moderator ? moderator.username : 'Unknown Moderator';
 
-  const content = -----------------------------------------------------------------------
-**Type:** ${report.type}
-**Moderator:** ${moderatorName}
-**Duration:** ${humanizeDuration(report.duration)}
-**Reason:** ${report.reason};
+  const content = `**Type:** ${report.type}\n**Moderator:** ${moderatorName}\n**Duration:** ${humanizeDuration(report.duration)}\n**Reason:**`
 
   const files = report.attachments.map(att => ({ attachment: att.url, name: att.name }));
   await thread.send({ content, files });
