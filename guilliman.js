@@ -97,9 +97,8 @@ async function processXPQueue(client) {
       await xpChannel.send(String(xpAmount));
       await delay(2000);
 
-      console.log(✅ Gave ${xpAmount} XP to user ${userId});
+
     } catch (err) {
-      console.error(❌ Failed to give XP to ${userId}:, err);
     }
   }
 
@@ -154,11 +153,11 @@ client.on('messageCreate', async (m) => {
 
     const hasRole = authorizedRoles.some(roleId => member?.roles.cache.has(roleId));
     if (!hasRole) {
-      console.log(Unauthorized mod command attempt by ${m.author.tag});
+      console.log(`Unauthorized mod command attempt by ${m.author.tag}`);
       return;
     }
 
-    console.log(Mod command detected by authorized user ${m.author.tag}!, modCommand);
+    console.log(`Mod command detected by authorized user ${m.author.tag}!, modCommand`);
 
     try {
       await postModReport('1356006813815935096', modCommand, client);
@@ -478,7 +477,7 @@ function registerThreadDeleteListener(client) {
   client.on('threadDelete', (thread) => {
     const userId = Object.keys(modThreads).find(key => modThreads[key] === thread.id);
     if (userId) {
-      console.log(Thread for user ${userId} was deleted, removing from JSON.);
+      console.log(`Thread for user ${userId} was deleted, removing from JSON.`);
       delete modThreads[userId];
       saveModThreads();
     }
@@ -497,6 +496,6 @@ const app = express();
 app.get('/', (req, res) => res.send('Bot is alive.'));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(Keep-alive server running on port ${PORT});
+  console.log(`Keep-alive server running on port ${PORT}`);
 });
 
