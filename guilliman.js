@@ -66,7 +66,7 @@ const GUILD_ID = '1252204883533103145';    // always string!
 let sessionId
 
 client.once('ready', () => {
-  const channel = await client.channels.fetch('1356006813815935096');
+  const channel = client.channels.fetch('1356006813815935096');
   console.log('Channel:', channel);
   console.log('Channel type:', channel.type);
   console.log('Channel type enum GuildForum:', ChannelType.GuildForum);
