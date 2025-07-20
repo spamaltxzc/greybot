@@ -66,7 +66,7 @@ const GUILD_ID = '1252204883533103145';    // always string!
 let sessionId
 
 client.once('ready', () => {
-  console.log([READY] ${client.user.tag});
+  
 });
 
 
