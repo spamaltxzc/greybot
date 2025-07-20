@@ -440,7 +440,12 @@ async function postModReport(forumChannelId, report, client) {
 
     modThreads[targetUserId] = targetThread.id;
     saveModThreads();
+
+    // 🔍 Log current modThreads.json content
+    console.log('🔁 Updated modThreads.json content:\n', JSON.stringify(modThreads, null, 2));
+
     await sendReportToThread(targetThread, report, client);
+
 
   } catch (error) {
     console.error('Error posting mod report:', error);
