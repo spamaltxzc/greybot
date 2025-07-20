@@ -199,7 +199,7 @@ async function handleBingo(message){
   let csvText;
   try {
     const res = await fetch(file.url);
-    if (!res.ok) throw new Error(HTTP ${res.status});
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     csvText = await res.text();
   } catch (err) {
     console.error('[CSV] fetch error:', err);
