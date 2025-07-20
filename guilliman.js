@@ -272,7 +272,7 @@ async function handleBingo(message){
       const m = await guild.members.fetch(id).catch(() => null);
       if (m) {
         await m.roles.add(role).catch(() => {});
-        roleUpdates[label].push(<@${id}>);
+        roleUpdates[label].push(`<@${id}>`);
       }
     }
   }
@@ -284,9 +284,9 @@ async function handleBingo(message){
   async function giveXp(id, amount) {
     await xpChannel.send('t@score');         await delay(2000);
     await xpChannel.send('1');               await delay(2000);
-    await xpChannel.send(<@${id}>);        await delay(2000);
+    await xpChannel.send(`<@${id}>`);        await delay(2000);
     await xpChannel.send(String(amount));    await delay(2000);
-    xpUpdates[amount === 2000 ? '2' : '1'].push(<@${id}>);
+    xpUpdates[amount === 2000 ? '2' : '1'].push(`<@${id}>`);
   }
 
   for (const id of topIDs)    await giveXp(id, 2000);
@@ -414,7 +414,7 @@ async function postModReport(forumChannelId, report, client) {
       const messageCount = await getMessageCount(guild, targetUserId);
       if (messageCount < 1000) {
         const logChannel = await client.channels.fetch('1356009015485796372');
-        await logChannel.send(${targetUserId}\nReason: ${report.reason}\nBanned by <@${report.moderatorId}>);
+        await logChannel.send(`${targetUserId}\nReason: ${report.reason}\nBanned by <@${report.moderatorId}>`);
         return;
       }
     }
@@ -438,7 +438,7 @@ async function postModReport(forumChannelId, report, client) {
     if (!targetThread) {
       targetThread = await forumChannel.threads.create({
         name: targetUserId,
-        message: { content: Thread created for user <@${targetUserId}>. },
+        message: { content: `Thread created for user <@${targetUserId}>.` },
       });
     }
 
