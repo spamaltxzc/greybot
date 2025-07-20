@@ -295,15 +295,15 @@ async function handleBingo(message){
   const announce = [];
 
   if (roleUpdates.striker.length)
-    announce.push(Added **Striker** role to: ${roleUpdates.striker.join(', ')});
+    announce.push(`Added **Striker** role to: ${roleUpdates.striker.join(', ')}`);
   if (roleUpdates.benchwarmer.length)
-    announce.push(Added **Benchwarmer** role to: ${roleUpdates.benchwarmer.join(', ')});
+    announce.push(`Added **Benchwarmer** role to: ${roleUpdates.benchwarmer.join(', ')}`);
   if (roleUpdates.clown.length)
-    announce.push(Added **Clown** role to: ${roleUpdates.clown.join(', ')});
+    announce.push(`Added **Clown** role to: ${roleUpdates.clown.join(', ')}`);
   if (xpUpdates['2'].length)
-    announce.push(Gave **2000 XP** to: ${xpUpdates['2'].join(', ')});
+    announce.push(`Gave **2000 XP** to: ${xpUpdates['2'].join(', ')}`);
   if (xpUpdates['1'].length)
-    announce.push(Gave **1000 XP** to: ${xpUpdates['1'].join(', ')});
+    announce.push(`Gave **1000 XP** to: ${xpUpdates['1'].join(', ')}`);
 
   if (announce.length)
     await message.channel.send(announce.join('\n'));
