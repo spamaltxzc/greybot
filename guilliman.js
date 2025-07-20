@@ -403,16 +403,26 @@ function saveModThreads() {
 async function postModReport(forumChannelId, report, client) {
   console.log('Posting mod report:', report);
 
-  const guild = client.guilds.cache.first();
-  const forumChannel = await client.channels.fetch(forumChannelId);
-  if (!forumChannel || forumChannel.type !== ChannelType.GuildForum) {
-  console.error(`Not a forum channel: got type ${forumChannel?.type}`);
-  return;
-}
-
+  // Fetch the correct guild
+  const guild = await client.guilds.fetch(GUILD_ID);
+  
   try {
-    const targetUserId = report.userId.trim();
+    const forumChannel = await client.channels.fetch(forumChannelId);
+    console.log('Fetched channel:', forumChannel);
+    console.log('Fetched channel type:', forumChannel?.type);
 
+    if (!forumChannel || forumChannel.type !== ChannelType.GuildForum) {
+      console.error(`Not a forum channel: got type ${forumChannel?.type}`);
+      return;
+    }
+
+    const targetUserId = report.userId.trim();
+    if (!targetUserId) {
+      console.error('User ID is invalid or missing');
+      return;
+    }
+
+    // Handle 'ban' type reports
     if (report.type === 'ban' && !modThreads[targetUserId]) {
       const messageCount = await getMessageCount(guild, targetUserId);
       if (messageCount < 1000) {
@@ -422,6 +432,7 @@ async function postModReport(forumChannelId, report, client) {
       }
     }
 
+    // Fetch existing thread or create new one
     if (modThreads[targetUserId]) {
       const threadId = modThreads[targetUserId];
       const existingThread = await forumChannel.threads.fetch(threadId).catch(() => null);
@@ -429,16 +440,19 @@ async function postModReport(forumChannelId, report, client) {
         await sendReportToThread(existingThread, report, client);
         return;
       } else {
+        console.log('Thread not found, creating new one.');
         delete modThreads[targetUserId];
         saveModThreads();
       }
     }
 
+    // Fetch active threads and create a new one if necessary
     const activeThreads = await forumChannel.threads.fetchActive();
     const allThreads = [...activeThreads.threads.values()];
     let targetThread = allThreads.find(t => t.name === targetUserId);
 
     if (!targetThread) {
+      console.log(`No existing thread found for user ${targetUserId}. Creating a new one.`);
       targetThread = await forumChannel.threads.create({
         name: targetUserId,
         message: { content: `Thread created for user <@${targetUserId}>.` },
@@ -452,7 +466,6 @@ async function postModReport(forumChannelId, report, client) {
     console.log('🔁 Updated modThreads.json content:\n', JSON.stringify(modThreads, null, 2));
 
     await sendReportToThread(targetThread, report, client);
-
 
   } catch (error) {
     console.error('Error posting mod report:', error);
