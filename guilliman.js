@@ -66,7 +66,10 @@ const GUILD_ID = '1252204883533103145';    // always string!
 let sessionId
 
 client.once('ready', () => {
-  
+  const channel = await client.channels.fetch('1356006813815935096');
+  console.log('Channel:', channel);
+  console.log('Channel type:', channel.type);
+  console.log('Channel type enum GuildForum:', ChannelType.GuildForum);
 });
 
 
@@ -403,9 +406,9 @@ async function postModReport(forumChannelId, report, client) {
   const guild = client.guilds.cache.first();
   const forumChannel = await client.channels.fetch(forumChannelId);
   if (!forumChannel || forumChannel.type !== ChannelType.GuildForum) {
-  console.error('Not a forum channel');
+  console.error(`Not a forum channel: got type ${forumChannel?.type}`);
   return;
-  }
+}
 
   try {
     const targetUserId = report.userId.trim();
