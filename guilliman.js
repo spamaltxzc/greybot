@@ -23,37 +23,36 @@ import sharp from 'sharp';
 import fetch from 'node-fetch';
 
 const math = create(all);
-math.config({ number:'number', precision:64 });
+math.config({ number: 'number', precision: 64 });
 
 /* ---------- CONFIG ---------- */
 
-const COUNTING_CHANNEL_ID   = '1348370380657524896';
-const COUNTING_BOT_ID       = '510016054391734273';
-const MONTHLY_CHANNEL_ID    = '1252204884426756193';
-const NEW_GEN_ROLE_ID       = '1354540452283682967';
-const TATSUMAKI_BOT_ID      = '172002275412279296';
-const BINGO_STRIKER_ROLE    = '1374818698334048448';   
-const BENCHWARMER_ROLE      = '1374818741216608469';   
-const CLOWN_ROLE            = '1374818786502246400';   
-const TATSU_CHANNEL_ID      = '1252204884426756193';
+const COUNTING_CHANNEL_ID = '1348370380657524896';
+const COUNTING_BOT_ID = '510016054391734273';
+const MONTHLY_CHANNEL_ID = '1252204884426756193';
+const NEW_GEN_ROLE_ID = '1354540452283682967';
+const TATSUMAKI_BOT_ID = '172002275412279296';
+const BINGO_STRIKER_ROLE = '1374818698334048448';
+const BENCHWARMER_ROLE = '1374818741216608469';
+const CLOWN_ROLE = '1374818786502246400';
+const TATSU_CHANNEL_ID = '1252204884426756193';
 const EVOLUTION_CHANNEL_ID = '1388984587237195906';
 
 const STAFF_ROLE_IDS = [
-  '1364897584031993973','1252204883667320885','1351661038902181969',
-  '1252204883667320886','1351850232337530901','1364944237069598792',
-  '1351853373007335444','1356635617437548607','1364957729675804774',
-  '1364930057683992637','1252204883667320889','1252204883667320890',
+  '1364897584031993973', '1252204883667320885', '1351661038902181969',
+  '1252204883667320886', '1351850232337530901', '1364944237069598792',
+  '1351853373007335444', '1356635617437548607', '1364957729675804774',
+  '1364930057683992637', '1252204883667320889', '1252204883667320890',
   '1358801211901345916',
 ];
 
-const client = new Client({ checkUpdate:false, readyStatus:false });
-const delay  = ms=>new Promise(r=>setTimeout(r,ms));
-
+const client = new Client({ checkUpdate: false, readyStatus: false });
+const delay = ms => new Promise(r => setTimeout(r, ms));
 
 const RIN_APP_ID = '429656936435286016';   // always string!
 const GUILD_ID = '1252204883533103145';    // always string!
 
-let sessionId
+let sessionId;
 
 client.ws.on('READY', (packet) => {
   sessionId = packet.session_id;
@@ -61,14 +60,11 @@ client.ws.on('READY', (packet) => {
 });
 
 client.once('ready', () => {
-  console.log([READY] ${client.user.tag});
+  console.log(`[READY] ${client.user.tag}`);
 });
-
-
 
 const xpClaimQueue = [];
 let processingXP = false;
-
 
 async function processXPQueue(client) {
   processingXP = true;
@@ -87,14 +83,14 @@ async function processXPQueue(client) {
       await delay(2000);
       await xpChannel.send('1');
       await delay(2000);
-      await xpChannel.send(<@${userId}>);
+      await xpChannel.send(`<@${userId}>`);
       await delay(2000);
       await xpChannel.send(String(xpAmount));
       await delay(2000);
 
-      console.log(✅ Gave ${xpAmount} XP to user ${userId});
+      console.log(`✅ Gave ${xpAmount} XP to user ${userId}`);
     } catch (err) {
-      console.error(❌ Failed to give XP to ${userId}:, err);
+      console.error(`❌ Failed to give XP to ${userId}:`, err);
     }
   }
 
@@ -149,11 +145,11 @@ client.on('messageCreate', async (m) => {
 
     const hasRole = authorizedRoles.some(roleId => member.roles.cache.has(roleId));
     if (!hasRole) {
-      console.log(Unauthorized mod command attempt by ${m.author.tag});
+      console.log(`Unauthorized mod command attempt by ${m.author.tag}`);
       return;
     }
 
-    console.log(Mod command detected by authorized user ${m.author.tag}!, modCommand);
+    console.log(`Mod command detected by authorized user ${m.author.tag}!, modCommand`);
 
     try {
       await postModReport('1356006813815935096', modCommand, client);
@@ -178,7 +174,7 @@ async function getMessageCount(guild, userId) {
 }
 
 /* ---------- BINGO ---------- */
-async function handleBingo(message){
+async function handleBingo(message) {
   if (!message.content.startsWith('.bingo')) return false;
 
   const args = message.content.trim().split(/\s+/);
@@ -195,7 +191,7 @@ async function handleBingo(message){
   let csvText;
   try {
     const res = await fetch(file.url);
-    if (!res.ok) throw new Error(HTTP ${res.status});
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     csvText = await res.text();
   } catch (err) {
     console.error('[CSV] fetch error:', err);
@@ -235,10 +231,10 @@ async function handleBingo(message){
   const min = Math.min(...scoreVals);
   const second = scoreVals.filter(s => s < max && s > 0).sort((a, b) => b - a)[0] ?? 0;
 
-  const topIDs    = grouped[max]   || [];
-  const secondIDs = grouped[second]|| [];
-  const zeroIDs   = grouped[0]     || [];
-  const minIDs    = grouped[min]   || [];
+  const topIDs = grouped[max] || [];
+  const secondIDs = grouped[second] || [];
+  const zeroIDs = grouped[0] || [];
+  const minIDs = grouped[min] || [];
 
   const guild = message.guild;
 
@@ -268,7 +264,7 @@ async function handleBingo(message){
       const m = await guild.members.fetch(id).catch(() => null);
       if (m) {
         await m.roles.add(role).catch(() => {});
-        roleUpdates[label].push(<@${id}>);
+        roleUpdates[label].push(`<@${id}>`);
       }
     }
   }
@@ -278,28 +274,32 @@ async function handleBingo(message){
   const xpUpdates = { '2': [], '1': [] };
 
   async function giveXp(id, amount) {
-    await xpChannel.send('t@score');         await delay(2000);
-    await xpChannel.send('1');               await delay(2000);
-    await xpChannel.send(<@${id}>);        await delay(2000);
-    await xpChannel.send(String(amount));    await delay(2000);
-    xpUpdates[amount === 2000 ? '2' : '1'].push(<@${id}>);
+    await xpChannel.send('t@score');
+    await delay(2000);
+    await xpChannel.send('1');
+    await delay(2000);
+    await xpChannel.send(`<@${id}>`);
+    await delay(2000);
+    await xpChannel.send(String(amount));
+    await delay(2000);
+    xpUpdates[amount === 2000 ? '2' : '1'].push(`<@${id}>`);
   }
 
-  for (const id of topIDs)    await giveXp(id, 2000);
+  for (const id of topIDs) await giveXp(id, 2000);
   for (const id of secondIDs) await giveXp(id, 1000);
 
   const announce = [];
 
   if (roleUpdates.striker.length)
-    announce.push(Added **Striker** role to: ${roleUpdates.striker.join(', ')});
+    announce.push(`Added **Striker** role to: ${roleUpdates.striker.join(', ')}`);
   if (roleUpdates.benchwarmer.length)
-    announce.push(Added **Benchwarmer** role to: ${roleUpdates.benchwarmer.join(', ')});
+    announce.push(`Added **Benchwarmer** role to: ${roleUpdates.benchwarmer.join(', ')}`);
   if (roleUpdates.clown.length)
-    announce.push(Added **Clown** role to: ${roleUpdates.clown.join(', ')});
+    announce.push(`Added **Clown** role to: ${roleUpdates.clown.join(', ')}`);
   if (xpUpdates['2'].length)
-    announce.push(Gave **2000 XP** to: ${xpUpdates['2'].join(', ')});
+    announce.push(`Gave **2000 XP** to: ${xpUpdates['2'].join(', ')}`);
   if (xpUpdates['1'].length)
-    announce.push(Gave **1000 XP** to: ${xpUpdates['1'].join(', ')});
+    announce.push(`Gave **1000 XP** to: ${xpUpdates['1'].join(', ')}`);
 
   if (announce.length)
     await message.channel.send(announce.join('\n'));
@@ -327,7 +327,6 @@ client.on('messageCreate', async (message) => {
 
 });
 
-
 // === Duration Formatter ===
 function humanizeDuration(dur) {
   if (!dur || dur.toLowerCase() === 'n/a') return 'N/A';
@@ -347,7 +346,7 @@ function humanizeDuration(dur) {
   let unitStr = unitsMap[unit] || unit;
   if (num !== 1) unitStr += 's';
 
-  return ${num} ${unitStr};
+  return `${num} ${unitStr}`;
 }
 
 // === Mod Command Parser ===
@@ -410,7 +409,7 @@ async function postModReport(forumChannelId, report, client) {
       const messageCount = await getMessageCount(guild, targetUserId);
       if (messageCount < 1000) {
         const logChannel = await client.channels.fetch('1356009015485796372');
-        await logChannel.send(${targetUserId}\nReason: ${report.reason}\nBanned by <@${report.moderatorId}>);
+        await logChannel.send(`${targetUserId}\nReason: ${report.reason}\nBanned by <@${report.moderatorId}>`);
         return;
       }
     }
@@ -434,7 +433,7 @@ async function postModReport(forumChannelId, report, client) {
     if (!targetThread) {
       targetThread = await forumChannel.threads.create({
         name: targetUserId,
-        message: { content: Thread created for user <@${targetUserId}>. },
+        message: { content: `Thread created for user <@${targetUserId}>.` },
       });
     }
 
@@ -446,7 +445,6 @@ async function postModReport(forumChannelId, report, client) {
 
     await sendReportToThread(targetThread, report, client);
 
-
   } catch (error) {
     console.error('Error posting mod report:', error);
   }
@@ -457,40 +455,34 @@ async function sendReportToThread(thread, report, client) {
   const moderator = await client.users.fetch(report.moderatorId).catch(() => null);
   const moderatorName = moderator ? moderator.username : 'Unknown Moderator';
 
-  const content = -----------------------------------------------------------------------
+  const content = `-----------------------------------------------------------------------
 **Type:** ${report.type}
 **Moderator:** ${moderatorName}
 **Duration:** ${humanizeDuration(report.duration)}
-**Reason:** ${report.reason};
+**Reason:** ${report.reason};`;
 
   const files = report.attachments.map(att => ({ attachment: att.url, name: att.name }));
   await thread.send({ content, files });
 }
 
 // === Thread delete monitor ===
-
 function registerThreadDeleteListener(client) {
   client.on('threadDelete', (thread) => {
     const userId = Object.keys(modThreads).find(key => modThreads[key] === thread.id);
     if (userId) {
-      console.log(Thread for user ${userId} was deleted, removing from JSON.);
+      console.log(`Thread for user ${userId} was deleted, removing from JSON.`);
       delete modThreads[userId];
       saveModThreads();
     }
   });
 }
 
-
-
-
-
 // 🚀 Start bot
-
 client.login(process.env.DISCORD_TOKEN).catch(console.error);
 
 const app = express();
 app.get('/', (req, res) => res.send('Bot is alive.'));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(Keep-alive server running on port ${PORT});
+  console.log(`Keep-alive server running on port ${PORT}`);
 });
