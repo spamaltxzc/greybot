@@ -92,7 +92,7 @@ async function processXPQueue(client) {
       await delay(2000);
       await xpChannel.send('1');
       await delay(2000);
-      await xpChannel.send(<@${userId}>);
+      await xpChannel.send(`<@${userId}>`);
       await delay(2000);
       await xpChannel.send(String(xpAmount));
       await delay(2000);
