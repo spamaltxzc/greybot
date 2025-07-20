@@ -19,7 +19,6 @@
     "express": "^4.19.2",
     "google-auth-library": "^9.15.1",
     "google-spreadsheet": "^4.1.4",
-    "google-translate-api-x": "^10.7.2",
     "groq-sdk": "^0.26.0",
     "jimp": "^1.6.0",
     "mathjs": "^14.5.2",
@@ -33,5 +32,3 @@
     "vader-sentiment": "^1.1.3"
   }
 }
-
-
