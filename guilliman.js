@@ -351,7 +351,7 @@ function humanizeDuration(dur) {
   let unitStr = unitsMap[unit] || unit;
   if (num !== 1) unitStr += 's';
 
-  return ${num} ${unitStr};
+  return `${num} ${unitStr}`;
 }
 
 // === Mod Command Parser ===
