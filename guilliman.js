@@ -152,6 +152,7 @@ client.on('messageCreate', async (m) => {
 
     const intersection2 = [...membersA].filter(
       id => membersB.has(id)
+    );
 
         console.log('=== Members in BOTH guilds ===');
     for (const id of intersection2) {
