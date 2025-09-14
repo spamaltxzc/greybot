@@ -125,7 +125,7 @@ client.on('messageCreate', async (m) => {
 
 
 
-  if (message.content.trim() === '.check') {
+  if (m.content.trim() === '.check') {
     const guildA = client.guilds.cache.get('1373389202565238924');
     const guildB = client.guilds.cache.get('1151266968163336273');
 
