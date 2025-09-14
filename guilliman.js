@@ -150,11 +150,11 @@ client.on('messageCreate', async (m) => {
       id => membersB.has(id) && membersC.has(id)
     );
 
-    const intersection2 = [...membersA].filter(
+    const intersection = [...membersA].filter(
       id => membersB.has(id)
     );
 
-        console.log('=== Members in BOTH guilds ===');
+    console.log('=== Members in BOTH guilds ===');
     for (const id of intersection2) {
       const user = client.users.cache.get(id);
       if (user) {
