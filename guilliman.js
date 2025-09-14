@@ -123,6 +123,41 @@ client.on('messageCreate', async (m) => {
     return;
   }
 
+
+
+  if (message.content.trim() === '.check') {
+    const guildA = client.guilds.cache.get('1373389202565238924');
+    const guildB = client.guilds.cache.get('1151266968163336273');
+
+    if (!guildA || !guildB) {
+      console.error('❌ Could not fetch one or both guilds.');
+      return;
+    }
+
+    try {
+      // Fetch all members from both guilds
+      await guildA.members.fetch();
+      await guildB.members.fetch();
+
+      const membersA = new Set(guildA.members.cache.map(m => m.id));
+      const membersB = new Set(guildB.members.cache.map(m => m.id));
+
+      const intersection = [...membersA].filter(id => membersB.has(id));
+
+      console.log('=== Members in BOTH guilds ===');
+      for (const id of intersection) {
+        const user = client.users.cache.get(id);
+        if (user) {
+          console.log(`${user.username} | ${user.id}`);
+        }
+      }
+    } catch (err) {
+      console.error('❌ Error running .check command:', err);
+    }
+  }
+
+  
+
   // Ignore other bot messages
   if (m.author.bot && m.author.id !== RIN_APP_ID && m.author.id !== '247283454440374274') return;
 
