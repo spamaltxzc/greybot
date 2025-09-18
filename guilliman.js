@@ -150,7 +150,7 @@ client.on('messageCreate', async (m) => {
       id => membersB.has(id) && membersC.has(id)
     );
 
-    const intersection = [...membersA].filter(
+    const intersection2 = [...membersA].filter(
       id => membersB.has(id)
     );
 
