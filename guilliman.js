@@ -61,6 +61,15 @@ client.ws.on('READY', (packet) => {
 
 client.once('ready', () => {
   console.log(`[READY] ${client.user.tag}`);
+  
+  // Load any existing XP queue data from previous session
+  loadXpQueue();
+  
+  // If there are users in the queue, start processing them
+  if (transferXpQueue.length > 0 && !processingXP) {
+    console.log(`🔄 Resuming XP transfer processing for ${transferXpQueue.length} users...`);
+    processTransferXPQueue(client);
+  }
 });
 
 const xpClaimQueue = [];
@@ -77,6 +86,67 @@ let xpDataCollector = {
   sourceChannelId: null,
   targetChannelId: null
 };
+
+// XP Queue persistence functions
+const xpQueuePath = path.join(__dirname, 'xp.txt');
+
+function saveXpQueue() {
+  try {
+    const queueData = transferXpQueue.map(user => 
+      `${user.userId}|${user.username}|${user.xpAmount}`
+    ).join('\n');
+    fs.writeFileSync(xpQueuePath, queueData, 'utf8');
+    console.log(`💾 Saved ${transferXpQueue.length} users to xp.txt`);
+  } catch (err) {
+    console.error('❌ Failed to save XP queue:', err);
+  }
+}
+
+function loadXpQueue() {
+  try {
+    if (!fs.existsSync(xpQueuePath)) {
+      console.log('📄 No existing xp.txt file found');
+      return;
+    }
+    
+    const queueData = fs.readFileSync(xpQueuePath, 'utf8').trim();
+    if (!queueData) {
+      console.log('📄 xp.txt file is empty');
+      return;
+    }
+    
+    const lines = queueData.split('\n');
+    let loadedCount = 0;
+    
+    for (const line of lines) {
+      const parts = line.trim().split('|');
+      if (parts.length === 3) {
+        const [userId, username, xpAmount] = parts;
+        transferXpQueue.push({
+          userId: userId.trim(),
+          username: username.trim(),
+          xpAmount: parseInt(xpAmount.trim(), 10)
+        });
+        loadedCount++;
+      }
+    }
+    
+    console.log(`📥 Loaded ${loadedCount} users from xp.txt to resume processing`);
+  } catch (err) {
+    console.error('❌ Failed to load XP queue:', err);
+  }
+}
+
+function clearXpQueue() {
+  try {
+    if (fs.existsSync(xpQueuePath)) {
+      fs.unlinkSync(xpQueuePath);
+      console.log('🗑️ Cleared xp.txt file');
+    }
+  } catch (err) {
+    console.error('❌ Failed to clear XP queue file:', err);
+  }
+}
 
 async function processXPQueue(client) {
   processingXP = true;
@@ -123,7 +193,9 @@ async function processTransferXPQueue(client) {
     const xpChannel = await client.channels.fetch('1417915968327389224').catch(() => null);
     if (!xpChannel) {
       console.error('❌ Failed to fetch XP transfer channel.');
-      continue;
+      // Put the user back at the front of the queue if channel fetch fails
+      transferXpQueue.unshift({ userId, xpAmount, username });
+      break;
     }
 
     try {
@@ -139,13 +211,27 @@ async function processTransferXPQueue(client) {
       await delay(2000);
 
       console.log(`✅ Transferred ${xpAmount} XP to ${username} (${userId})`);
+      
+      // Update the file after each successful transfer
+      saveXpQueue();
+      
     } catch (err) {
       console.error(`❌ Failed to transfer XP to ${username} (${userId}):`, err);
+      // Put the user back at the front of the queue if transfer fails
+      transferXpQueue.unshift({ userId, xpAmount, username });
+      saveXpQueue();
+      break;
     }
   }
 
   processingXP = false;
-  console.log('✅ XP transfer queue processing completed');
+  
+  if (transferXpQueue.length === 0) {
+    console.log('✅ XP transfer queue processing completed - clearing file');
+    clearXpQueue();
+  } else {
+    console.log(`⏸️ XP transfer processing paused - ${transferXpQueue.length} users remaining`);
+  }
 }
 
 // Parse XP data from Tatsumaki bot response
@@ -246,6 +332,47 @@ client.on('messageCreate', async (m) => {
   }
 }
 
+  // === XP Queue Status Command ===
+  if (m.content.trim() === '.xpstatus') {
+    console.log(`📋 XP Queue Status:`);
+    console.log(`- Queue length: ${transferXpQueue.length}`);
+    console.log(`- Processing: ${processingXP}`);
+    console.log(`- Data collector active: ${xpDataCollector.isActive}`);
+    
+    if (transferXpQueue.length > 0) {
+      console.log(`- Next 3 users in queue:`);
+      for (let i = 0; i < Math.min(3, transferXpQueue.length); i++) {
+        const user = transferXpQueue[i];
+        console.log(`  ${i + 1}. ${user.username} (${user.userId}) - ${user.xpAmount} XP`);
+      }
+    }
+    
+    // If there are users in queue but not processing, offer to resume
+    if (transferXpQueue.length > 0 && !processingXP) {
+      console.log(`🔄 Resuming XP transfer processing...`);
+      processTransferXPQueue(client);
+    }
+    
+    return;
+  }
+  
+  // === Resume XP Processing Command ===
+  if (m.content.trim() === '.resumexp') {
+    if (transferXpQueue.length === 0) {
+      console.log('📋 No users in XP transfer queue');
+      return;
+    }
+    
+    if (processingXP) {
+      console.log('⚠️ XP processing is already running');
+      return;
+    }
+    
+    console.log(`🔄 Manually resuming XP transfer processing for ${transferXpQueue.length} users...`);
+    processTransferXPQueue(client);
+    return;
+  }
+
   // === Transfer XP Command Handler ===
   if (m.content.trim() === '.transferxp') {
     console.log('🚀 Starting XP transfer process...');
@@ -320,6 +447,9 @@ client.on('messageCreate', async (m) => {
       }
       
       console.log(`📋 Added ${xpDataCollector.collectedData.length} users to transfer queue`);
+      
+      // Save the queue to file for persistence
+      saveXpQueue();
       
       // Reset collector
       xpDataCollector.isActive = false;
