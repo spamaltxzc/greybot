@@ -253,7 +253,7 @@ client.on('messageCreate', async (m) => {
     // Set up data collector
     xpDataCollector = {
       isActive: true,
-      expectedMessages: 2, // t!top and t!top 2
+      expectedMessages: 200, // Pages 1 to 200
       receivedMessages: 0,
       collectedData: [],
       sourceChannelId: '1151266968754716705',
@@ -268,17 +268,21 @@ client.on('messageCreate', async (m) => {
         return;
       }
       
-      console.log('📤 Sending t!top text command...');
-      await sourceChannel.send('t!top text');
+      console.log('📤 Starting to send t!top commands for pages 1-200...');
       
-      // Wait 15 seconds before sending the second command
-      console.log('⏳ Waiting 15 seconds before next command...');
-      await delay(15000);
+      // Send commands for pages 1 to 200
+      for (let page = 1; page <= 200; page++) {
+        console.log(`📤 Sending t!top ${page} text command...`);
+        await sourceChannel.send(`t!top ${page} text`);
+        
+        // Wait 15 seconds between each command to avoid rate limits
+        if (page < 200) {
+          console.log(`⏳ Waiting 15 seconds before next command... (${page}/200)`);
+          await delay(15000);
+        }
+      }
       
-      console.log('📤 Sending t!top 2 text command...');
-      await sourceChannel.send('t!top 2 text');
-      
-      console.log('⏳ Waiting for Tatsumaki bot responses...');
+      console.log('⏳ All commands sent. Waiting for Tatsumaki bot responses...');
       
     } catch (err) {
       console.error('❌ Failed to send XP collection commands:', err);
@@ -291,7 +295,9 @@ client.on('messageCreate', async (m) => {
   if (xpDataCollector.isActive && 
       m.author.id === TATSUMAKI_BOT_ID && 
       m.channel.id === xpDataCollector.sourceChannelId &&
-      m.content.includes('Viewing All-time Rankings Server Score Rankings')) {
+      (m.content.includes('Viewing All-time Rankings Server Score Rankings') || 
+       m.content.includes('Viewing server rankings') ||
+       m.content.includes('📋 Rank | Name'))) {
     
     console.log(`📥 Received Tatsumaki response ${xpDataCollector.receivedMessages + 1}/${xpDataCollector.expectedMessages}`);
     
