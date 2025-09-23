@@ -253,7 +253,7 @@ client.on('messageCreate', async (m) => {
     // Set up data collector
     xpDataCollector = {
       isActive: true,
-      expectedMessages: 200, // Pages 1 to 200
+      expectedMessages: 100, // Pages 1 to 100
       receivedMessages: 0,
       collectedData: [],
       sourceChannelId: '1151266968754716705',
@@ -268,16 +268,16 @@ client.on('messageCreate', async (m) => {
         return;
       }
       
-      console.log('📤 Starting to send t!top commands for pages 1-200...');
+      console.log('📤 Starting to send t!top commands for pages 1-100...');
       
-      // Send commands for pages 1 to 200
-      for (let page = 1; page <= 200; page++) {
+      // Send commands for pages 1 to 100
+      for (let page = 1; page <= 100; page++) {
         console.log(`📤 Sending t!top ${page} text command...`);
         await sourceChannel.send(`t!top ${page} text`);
         
         // Wait 15 seconds between each command to avoid rate limits
-        if (page < 200) {
-          console.log(`⏳ Waiting 15 seconds before next command... (${page}/200)`);
+        if (page < 100) {
+          console.log(`⏳ Waiting 15 seconds before next command... (${page}/100)`);
           await delay(15000);
         }
       }
