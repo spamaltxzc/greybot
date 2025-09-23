@@ -268,14 +268,15 @@ client.on('messageCreate', async (m) => {
         return;
       }
       
-      console.log('📤 Sending t!top command...');
-      await sourceChannel.send('t!top');
+      console.log('📤 Sending t!top text command...');
+      await sourceChannel.send('t!top text');
       
-      // Wait a bit before sending the second command
-      await delay(3000);
+      // Wait 15 seconds before sending the second command
+      console.log('⏳ Waiting 15 seconds before next command...');
+      await delay(15000);
       
-      console.log('📤 Sending t!top 2 command...');
-      await sourceChannel.send('t!top 2');
+      console.log('📤 Sending t!top 2 text command...');
+      await sourceChannel.send('t!top 2 text');
       
       console.log('⏳ Waiting for Tatsumaki bot responses...');
       
