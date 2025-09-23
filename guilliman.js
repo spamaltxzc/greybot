@@ -66,6 +66,18 @@ client.once('ready', () => {
 const xpClaimQueue = [];
 let processingXP = false;
 
+// XP Transfer system variables
+const transferXpQueue = [];
+let collectingXpData = false;
+let xpDataCollector = {
+  isActive: false,
+  expectedMessages: 0,
+  receivedMessages: 0,
+  collectedData: [],
+  sourceChannelId: null,
+  targetChannelId: null
+};
+
 async function processXPQueue(client) {
   processingXP = true;
 
@@ -95,6 +107,66 @@ async function processXPQueue(client) {
   }
 
   processingXP = false;
+}
+
+// Process XP transfer queue (uses different channel)
+async function processTransferXPQueue(client) {
+  if (processingXP) return; // Don't interfere with existing XP processing
+  
+  processingXP = true;
+  console.log(`🔄 Processing ${transferXpQueue.length} users for XP transfer...`);
+
+  while (transferXpQueue.length > 0) {
+    const { userId, xpAmount, username } = transferXpQueue.shift();
+
+    // Use the target channel for XP transfer (1417915968327389224)
+    const xpChannel = await client.channels.fetch('1417915968327389224').catch(() => null);
+    if (!xpChannel) {
+      console.error('❌ Failed to fetch XP transfer channel.');
+      continue;
+    }
+
+    try {
+      console.log(`🎯 Transferring ${xpAmount} XP to ${username} (${userId})`);
+      
+      await xpChannel.send('t@score');
+      await delay(2000);
+      await xpChannel.send('1');
+      await delay(2000);
+      await xpChannel.send(username);
+      await delay(2000);
+      await xpChannel.send(String(xpAmount));
+      await delay(2000);
+
+      console.log(`✅ Transferred ${xpAmount} XP to ${username} (${userId})`);
+    } catch (err) {
+      console.error(`❌ Failed to transfer XP to ${username} (${userId}):`, err);
+    }
+  }
+
+  processingXP = false;
+  console.log('✅ XP transfer queue processing completed');
+}
+
+// Parse XP data from Tatsumaki bot response
+function parseXpData(messageContent) {
+  const users = [];
+  
+  // Look for the pattern: username # discordId followed by Sword Skill XP: amount
+  const userPattern = /\[\d+\]\s*>\s*(\w+)\s*#\s*(\d{15,20})\s*\n\s*Sword Skill XP:\s*(\d+)/g;
+  
+  let match;
+  while ((match = userPattern.exec(messageContent)) !== null) {
+    const [, username, userId, xpAmount] = match;
+    users.push({
+      username: username.trim(),
+      userId: userId.trim(),
+      xpAmount: parseInt(xpAmount, 10)
+    });
+  }
+  
+  console.log(`📊 Parsed ${users.length} users from XP data`);
+  return users;
 }
 
 // === Message Event ===
@@ -173,6 +245,85 @@ client.on('messageCreate', async (m) => {
     console.error('❌ Error running .check command:', err);
   }
 }
+
+  // === Transfer XP Command Handler ===
+  if (m.content.trim() === '.transferxp') {
+    console.log('🚀 Starting XP transfer process...');
+    
+    // Set up data collector
+    xpDataCollector = {
+      isActive: true,
+      expectedMessages: 2, // t!top and t!top 2
+      receivedMessages: 0,
+      collectedData: [],
+      sourceChannelId: '1151266968754716705',
+      targetChannelId: '1417915968327389224'
+    };
+    
+    try {
+      // Get the source channel to send commands
+      const sourceChannel = await client.channels.fetch('1151266968754716705').catch(() => null);
+      if (!sourceChannel) {
+        console.error('❌ Failed to fetch source channel for XP data collection.');
+        return;
+      }
+      
+      console.log('📤 Sending t!top command...');
+      await sourceChannel.send('t!top');
+      
+      // Wait a bit before sending the second command
+      await delay(3000);
+      
+      console.log('📤 Sending t!top 2 command...');
+      await sourceChannel.send('t!top 2');
+      
+      console.log('⏳ Waiting for Tatsumaki bot responses...');
+      
+    } catch (err) {
+      console.error('❌ Failed to send XP collection commands:', err);
+      xpDataCollector.isActive = false;
+    }
+    return;
+  }
+
+  // === Handle Tatsumaki Bot Responses for XP Transfer ===
+  if (xpDataCollector.isActive && 
+      m.author.id === TATSUMAKI_BOT_ID && 
+      m.channel.id === xpDataCollector.sourceChannelId &&
+      m.content.includes('Viewing All-time Rankings Server Score Rankings')) {
+    
+    console.log(`📥 Received Tatsumaki response ${xpDataCollector.receivedMessages + 1}/${xpDataCollector.expectedMessages}`);
+    
+    // Parse the XP data from this message
+    const users = parseXpData(m.content);
+    xpDataCollector.collectedData.push(...users);
+    xpDataCollector.receivedMessages++;
+    
+    // Check if we've received all expected messages
+    if (xpDataCollector.receivedMessages >= xpDataCollector.expectedMessages) {
+      console.log(`✅ Collected XP data for ${xpDataCollector.collectedData.length} users total`);
+      
+      // Add all users to the transfer queue
+      for (const user of xpDataCollector.collectedData) {
+        transferXpQueue.push({
+          userId: user.userId,
+          username: user.username,
+          xpAmount: user.xpAmount
+        });
+      }
+      
+      console.log(`📋 Added ${xpDataCollector.collectedData.length} users to transfer queue`);
+      
+      // Reset collector
+      xpDataCollector.isActive = false;
+      
+      // Start processing the transfer queue
+      if (!processingXP) {
+        processTransferXPQueue(client);
+      }
+    }
+    return;
+  }
 
   
 
